@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-from lib.endomondo import Endomondo, EndomondoWorkout
-import lib.tcx
+from lib.endomondo import Endomondo
+import lib.tcx as tcx
 import re
 import getpass
 import sys
+
 
 # create a somewhat useful filename for the specified workout
 def create_filename(workout):
@@ -20,17 +21,19 @@ def create_filename(workout):
     ret += ".tcx"
     return ret
 
+
 # create the TCX file for the specified workout
 def create_tcx_file(workout):
     activity = workout.get_activity()
     name = create_filename(workout)
-    print "writing %s, %s, %s trackpoints" %(name, activity.sport, len(activity.trackpoints))
+    print "writing %s, %s, %s trackpoints" % (name, activity.sport, len(activity.trackpoints))
 
     writer = tcx.Writer()
     tcxfile = writer.write(activity)
     if tcxfile:
         with open(name, 'w') as f:
             f.write(tcxfile)
+
 
 def main():
     try:

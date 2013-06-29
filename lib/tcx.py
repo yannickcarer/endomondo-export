@@ -1,6 +1,5 @@
 import lxml.etree
-import datetime
-import time
+
 
 class Trackpoint:
     def __init__(self):
@@ -12,6 +11,7 @@ class Trackpoint:
         self.sensor_state = "Absent"
         self.heart_rate = None
         self.cadence = None
+
 
 class ActivityLap:
     def __init__(self):
@@ -28,7 +28,8 @@ class ActivityLap:
         self.avg_cadence = 0.0
         self.cadence = None
 
-class Activity:    
+
+class Activity:
     def __init__(self):
         self.sport = "Running"
         self.start_time = ''
@@ -36,20 +37,21 @@ class Activity:
         self.laps = []
         self.trackpoints = []
 
+
 class Writer:
 
     TCD_NAMESPACE = "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2"
     XML_SCHEMA_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance"
 
-    def create_element(self, parent, tag, text = None):
+    def create_element(self, parent, tag, text=None):
         tag = "{%s}%s" % (self.TCD_NAMESPACE, tag)
 
-        nsmap = { 
-            None : self.TCD_NAMESPACE,
+        nsmap = {
+            None: self.TCD_NAMESPACE,
             "xsi": self.XML_SCHEMA_NAMESPACE,
-            }
+        }
         element = lxml.etree.Element(tag, nsmap=nsmap)
-    
+
         if text:
             element.text = text
 
@@ -102,13 +104,12 @@ class Writer:
         self.add_property(elem, "TriggerMethod", lap.trigger_method)
 
         # Add trackpoints
-        tracks = self.create_element(elem, "Track")
         for w in activity.trackpoints:
             self.add_trackpoint(elem, w)
 
     def add_activity(self, element, activity):
         sport = activity.sport
-        if not sport: 
+        if not sport:
             sport = "Other"
 
         elem = self.create_element(element, "Activity")
