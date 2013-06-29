@@ -6,3 +6,6 @@
 
 # ignore the virtualenv folder
 venv
+
+# ignore the export directory
+export
