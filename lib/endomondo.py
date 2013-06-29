@@ -5,20 +5,23 @@ import requests
 import uuid
 import socket
 import datetime
-import sys
+
 
 def to_datetime(v):
     return datetime.datetime.strptime(v, "%Y-%m-%d %H:%M:%S %Z")
 
+
 def to_float(v):
-    if v == '' or v == None:
+    if v == '' or v is None:
         return None
     return float(v)
 
+
 def to_int(v):
-    if v == '' or v == None:
+    if v == '' or v is None:
         return None
     return float(v)
+
 
 def to_meters(v):
     v = to_float(v)
@@ -78,14 +81,15 @@ SPORTS = {
     48: 'Martial arts',
     49: 'Gymnastics',
     50: 'Step counter'
-    }
+}
+
 
 class Endomondo:
     os = "Android"
     os_version = "2.2"
     model = "M"
 
-    def __init__(self, email = None, password = None):
+    def __init__(self, email=None, password=None):
         self.auth_token = None
         self.request = requests.session()
         self.request.headers['User-Agent'] = self.get_user_agent()
@@ -114,9 +118,9 @@ class Endomondo:
             'model':            self.model,
             'v':                2.4,
             'action':           'PAIR'
-            }
+        }
         r = self.request.get('http://api.mobile.endomondo.com/mobile/auth',
-                             params = params)
+                             params=params)
         lines = r.text.split("\n")
 
         # check success
@@ -128,7 +132,7 @@ class Endomondo:
             key, value = line.split("=")
             if key == "authToken":
                 return value
-        
+
         return None
 
     def parse_text(self, response):
@@ -143,24 +147,25 @@ class Endomondo:
 
     def parse_json(self, response):
         """Parse API response as JSON"""
-        return response.json()['data']      
+        return response.json()['data']
 
     def call(self, url, format, params={}):
         """Call the Endomondo API"""
 
         # API request
-        params.update({ 'authToken': self.auth_token,
-                        'language': 'EN'
-                        })
+        params.update({
+            'authToken': self.auth_token,
+            'language': 'EN'
+        })
         r = self.request.get('http://api.mobile.endomondo.com/mobile/' + url,
-                             params = params)
+                             params=params)
 
         # check success
         if r.status_code != requests.codes.ok:
             print "Error: failed GET URL %s" % r.url
             r.raise_for_status()
             return None
-        
+
         # parse response in the appropriate format
         if format == 'text':
             return self.parse_text(r)
@@ -168,13 +173,14 @@ class Endomondo:
             return self.parse_json(r)
         return r
 
-    def get_workouts(self, max_results = 40):
+    def get_workouts(self, max_results=40):
         """Get the most recent workouts"""
         if not max_results:
             max_results = 100000000
-        json = self.call('api/workout/list', 'json', 
-                         { 'maxResults' : max_results })
-        return [ EndomondoWorkout(self, w) for w in json]
+        json = self.call('api/workout/list', 'json',
+                         {'maxResults': max_results})
+        return [EndomondoWorkout(self, w) for w in json]
+
 
 class EndomondoWorkout:
     """Endomondo Workout wrapper"""
@@ -187,7 +193,7 @@ class EndomondoWorkout:
     # dict wrapper
     def __getattr__(self, name):
         value = None
-        if self.properties.has_key(name):
+        if name in self.properties:
             value = self.properties[name]
             if name == 'sport':
                 value = SPORTS.get(value, 'Other')
@@ -196,7 +202,7 @@ class EndomondoWorkout:
         return value
 
     def get_activity(self):
-        """The TCX activity equivalent to this workout""" 
+        """The TCX activity equivalent to this workout"""
 
         if self.activity:
             return self.activity
@@ -207,12 +213,11 @@ class EndomondoWorkout:
         # the 1st line is activity details
         data = lines[0].split(";")
         start_time = to_datetime(data[6])
-        total_distance_meters = to_meters(data[8])
         self.activity = tcx.Activity()
         self.activity.sport = SPORTS.get(int(data[5]), "Other")
         self.activity.start_time = start_time
         self.activity.notes = self.notes
-            
+
         # create a single lap for the whole activity
         l = tcx.ActivityLap()
         l.start_time = start_time
@@ -238,5 +243,5 @@ class EndomondoWorkout:
                 w.distance_meters = to_meters(data[4])
                 w.heart_rate = to_int(data[7])
                 self.activity.trackpoints.append(w)
-                    
+
         return self.activity
