@@ -1,0 +1,11 @@
+# ignore the usual python things
+*.pyc
+
+# ignore the usual OSX things
+.DS_Store
+
+# ignore the virtualenv folder
+venv
+
+# ignore the export directory
+export

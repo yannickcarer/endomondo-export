@@ -1,0 +1,4 @@
+distribute==0.6.34
+lxml==3.2.1
+requests==1.2.3
+wsgiref==0.1.2
