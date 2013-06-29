@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from endomondo import Endomondo, EndomondoWorkout
-import tcx
+from lib.endomondo import Endomondo, EndomondoWorkout
+import lib.tcx
 import re
 import getpass
 import sys
