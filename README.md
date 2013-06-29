@@ -37,3 +37,9 @@ Then install the requirements:
     pip install -r requirements
 
 And you're set!
+
+
+Authors
+-------
+
+This script was created [@yannickcarer](https://github.com/yannickcarer), with some updates by [@mikedory](https://github.com/mikedory).
