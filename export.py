@@ -34,7 +34,7 @@ def create_tcx_file(workout):
     directory_name = 'export'
     activity = workout.get_activity()
     name = create_filename(workout)
-    directory = create_directory(directory_name)
+    create_directory(directory_name)
     filename = os.path.join(directory_name, name)
     print "writing %s, %s, %s trackpoints" % (filename, activity.sport, len(activity.trackpoints))
 
