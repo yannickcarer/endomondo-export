@@ -26,7 +26,7 @@ def create_filename(workout):
 # create a new directory to store the exported files in
 def create_directory(directory):
     if not os.path.exists(directory):
-        return os.makedirs(directory)
+        os.makedirs(directory)
 
 
 # create the TCX file for the specified workout
