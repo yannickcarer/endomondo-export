@@ -4,37 +4,37 @@ import time
 
 class Trackpoint:
     def __init__(self):
-		self.timestamp = None
-		self.latitude = 0.0
-		self.longitude = 0.0
-		self.altitude_meters = 0.0
-		self.distance_meters = 0.0
-		self.sensor_state = "Absent"
-		self.heart_rate = None
-		self.cadence = None
+        self.timestamp = None
+        self.latitude = 0.0
+        self.longitude = 0.0
+        self.altitude_meters = 0.0
+        self.distance_meters = 0.0
+        self.sensor_state = "Absent"
+        self.heart_rate = None
+        self.cadence = None
 
 class ActivityLap:
     def __init__(self):
-		self.start_time = None
-		self.timestamp = None
-		self.total_time_seconds = 0.0
-		self.distance_meters = 0.0
-		self.maximum_speed = 0.0
-		self.calories = 0
-		self.intensity = "Active"
-		self.trigger_method = "Distance"
-		self.avg_heart = 0.0
-		self.max_heart = 0.0
-		self.avg_cadence = 0.0
-		self.cadence = None
+        self.start_time = None
+        self.timestamp = None
+        self.total_time_seconds = 0.0
+        self.distance_meters = 0.0
+        self.maximum_speed = 0.0
+        self.calories = 0
+        self.intensity = "Active"
+        self.trigger_method = "Distance"
+        self.avg_heart = 0.0
+        self.max_heart = 0.0
+        self.avg_cadence = 0.0
+        self.cadence = None
 
 class Activity:    
     def __init__(self):
-		self.sport = "Running"
-		self.start_time = ''
-		self.notes = None
-		self.laps = []
-		self.trackpoints = []
+        self.sport = "Running"
+        self.start_time = ''
+        self.notes = None
+        self.laps = []
+        self.trackpoints = []
 
 class Writer:
 
@@ -45,9 +45,9 @@ class Writer:
         tag = "{%s}%s" % (self.TCD_NAMESPACE, tag)
 
         nsmap = { 
-			None : self.TCD_NAMESPACE,
-			"xsi": self.XML_SCHEMA_NAMESPACE,
-			}
+            None : self.TCD_NAMESPACE,
+            "xsi": self.XML_SCHEMA_NAMESPACE,
+            }
         element = lxml.etree.Element(tag, nsmap=nsmap)
     
         if text:
