@@ -6,6 +6,8 @@ import uuid
 import socket
 import datetime
 
+from time import sleep
+
 
 def to_datetime(v):
     return datetime.datetime.strptime(v, "%Y-%m-%d %H:%M:%S %Z")
@@ -89,10 +91,13 @@ class Endomondo:
     os_version = "2.2"
     model = "M"
 
-    def __init__(self, email=None, password=None):
+    def __init__(self, email=None, password=None, initial_delay=0, max_delay=30):
         self.auth_token = None
         self.request = requests.session()
         self.request.headers['User-Agent'] = self.get_user_agent()
+        self.delay = initial_delay
+        self.max_delay = max_delay
+
         if email and password:
             self.auth_token = self.request_auth_token(email, password)
 
@@ -157,14 +162,40 @@ class Endomondo:
             'authToken': self.auth_token,
             'language': 'EN'
         })
-        r = self.request.get('http://api.mobile.endomondo.com/mobile/' + url,
-                             params=params)
 
-        # check success
-        if r.status_code != requests.codes.ok:
-            print "Error: failed GET URL %s" % r.url
-            r.raise_for_status()
-            return None
+        def try_request():
+            # supports exponential backoff
+            sleep(self.delay)
+
+            r = self.request.get(
+                    'http://api.mobile.endomondo.com/mobile/' + url,
+                     params=params
+                )
+
+            if self.delay:
+                print "retrying {url} with {delay} second delay.".format(
+                    url=r.url,
+                    delay=self.delay
+                )
+
+            return r
+
+        retry = True
+
+        while retry == True:
+            r = try_request()
+
+            if r.status_code == requests.codes.ok:
+                retry = False
+
+            elif r.status_code == requests.status_code.forbidden \
+                 and self.delay < self.max_delay:
+                     self.delay = max(1, min(self.delay * 2, self.max_delay))
+
+            else:
+                print "Error: failed GET URL %s" % r.url
+                r.raise_for_status()
+                return None
 
         # parse response in the appropriate format
         if format == 'text':
@@ -177,8 +208,9 @@ class Endomondo:
         """Get the most recent workouts"""
         if not max_results:
             max_results = 100000000
+
         json = self.call('api/workout/list', 'json',
-                         {'maxResults': max_results})
+                        {'maxResults': max_results})
         return [EndomondoWorkout(self, w) for w in json]
 
 
