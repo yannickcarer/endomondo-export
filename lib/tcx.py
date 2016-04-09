@@ -103,6 +103,10 @@ class Writer:
         self.add_property(elem, "Cadence", lap.cadence)
         self.add_property(elem, "TriggerMethod", lap.trigger_method)
 
+        self.add_track(elem, activity)
+
+    def add_track(self, element, activity):
+        elem = self.create_element(element, "Track")
         # Add trackpoints
         for w in activity.trackpoints:
             self.add_trackpoint(elem, w)
