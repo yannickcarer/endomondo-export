@@ -30,7 +30,7 @@ def create_directory(directory):
 
 
 # create the TCX file for the specified workout
-def create_tcx_file(workout, garmin):
+def create_tcx_file(workout):
     directory_name = 'export'
     activity = workout.get_activity()
     name = create_filename(workout)
@@ -38,7 +38,7 @@ def create_tcx_file(workout, garmin):
     filename = os.path.join(directory_name, name)
     print "writing %s, %s, %s trackpoints" % (filename, activity.sport, len(activity.trackpoints))
 
-    writer = tcx.Writer(garmin)
+    writer = tcx.Writer()
     tcxfile = writer.write(activity)
     if tcxfile:
         with open(filename, 'w') as f:
@@ -67,14 +67,14 @@ def main():
                 print "Chunk after:" +str(after)
                 workouts = endomondo.get_workouts(maximum_workouts, before, after)
                 for workout in workouts:
-                    create_tcx_file(workout,garmin)
+                    create_tcx_file(workout)
             print "done."
             return 0
 
         workouts = endomondo.get_workouts(maximum_workouts, before=None, after=None)
         print "fetched latest", len(workouts), "workouts"
         for workout in workouts:
-            create_tcx_file(workout, garmin)
+            create_tcx_file(workout)
         print "done."
         return 0
 
