@@ -40,6 +40,9 @@ class Activity:
 
 class Writer:
 
+    def __init__(self, garmin):
+        self.garmin = garmin
+
     TCD_NAMESPACE = "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2"
     XML_SCHEMA_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance"
 
@@ -91,6 +94,7 @@ class Writer:
 
     def add_lap(self, element, activity, lap):
         elem = self.create_element(element, "Lap")
+        
         elem.set("StartTime", self.time_to_s(lap.start_time))
 
         self.add_property(elem, "TotalTimeSeconds", lap.total_time_seconds)
@@ -102,10 +106,15 @@ class Writer:
         self.add_property(elem, "Intensity", lap.intensity)
         self.add_property(elem, "Cadence", lap.cadence)
         self.add_property(elem, "TriggerMethod", lap.trigger_method)
-
-        # Add trackpoints
-        for w in activity.trackpoints:
-            self.add_trackpoint(elem, w)
+        # Garmin needs an extra Track wrapper
+        if self.garmin:
+            track = self.create_element(elem, "Track")
+            # Add trackpoints
+            for w in activity.trackpoints:
+                self.add_trackpoint(track, w)
+        else:
+            for w in activity.trackpoints:
+                self.add_trackpoint(elem, w)
 
     def add_activity(self, element, activity):
         sport = activity.sport
