@@ -50,7 +50,7 @@ def main():
         print "Endomondo: export most recent n workouts (or ALL) as TCX files."
         mail = raw_input("Email: ")
         password = getpass.getpass()
-        maximum_workouts = raw_input("Maximum number of workouts n (press Enter to ignore): ")
+        maximum_workouts = raw_input("Maximum number of workouts n (press Enter to download ALL OF THEM): ")
         garmin = raw_input("Format for Garmin Connect? (press Enter to ignore): ")
         endomondo = Endomondo(mail, password, garmin)
         if garmin:

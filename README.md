@@ -13,7 +13,7 @@ python export.py
 Endomondo: Export the most recent n workouts (or ALL) as TCX files.
 Email: mymail@yourdomain.com
 Password: 
-Maximum number of workouts n (press Enter to ignore): 5
+Maximum number of workouts n (press Enter download ALL OF THEM): 5
 Format for Garmin Connect? (press Enter to ignore): Y
 Files will be formatted to be compatible with Garmin Connects import function.
 fetched latest 5 workouts
