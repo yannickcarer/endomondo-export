@@ -5,7 +5,8 @@ import requests
 import uuid
 import socket
 import datetime
-
+import pytz
+import sys
 
 def to_datetime(v):
     return datetime.datetime.strptime(v, "%Y-%m-%d %H:%M:%S %Z")
@@ -28,6 +29,59 @@ def to_meters(v):
     if v:
         v *= 1000
     return v
+
+SPORTS_GARMIN = {
+    0:  'Running',
+    1:  'Biking',
+    2:  'Biking',
+    3:  'Biking',
+    4:  'Other',
+    5:  'Other',
+    6:  'Other',
+    7:  'Other',
+    8:  'Other',
+    9:  'Other',
+    10: 'Other',
+    11: 'Other',
+    12: 'Other',
+    13: 'Other',
+    14: 'Other',
+    15: 'Other',
+    17: 'Other',
+    18: 'Other',
+    19: 'Other',
+    20: 'Other',
+    21: 'Other',
+    22: 'Other',
+    23: 'Other',
+    24: 'Other',
+    25: 'Other',
+    26: 'Other',
+    27: 'Other',
+    28: 'Other',
+    29: 'Other',
+    30: 'Other',
+    31: 'Other',
+    32: 'Other',
+    33: 'Other',
+    34: 'Other',
+    35: 'Other',
+    36: 'Other',
+    37: 'Other',
+    38: 'Other',
+    39: 'Other',
+    40: 'Other',
+    41: 'Other',
+    42: 'Other',
+    43: 'Other',
+    44: 'Other',
+    45: 'Other',
+    46: 'Other',
+    47: 'Other',
+    48: 'Other',
+    49: 'Other',
+    50: 'Other'
+}
 
 SPORTS = {
     0:  'Running',
@@ -89,19 +143,20 @@ class Endomondo:
     os_version = "2.2"
     model = "M"
 
-    def __init__(self, email=None, password=None):
+    def __init__(self, email=None, password=None, garmin=None):
         self.auth_token = None
         self.request = requests.session()
         self.request.headers['User-Agent'] = self.get_user_agent()
         if email and password:
             self.auth_token = self.request_auth_token(email, password)
+        self.garmin = garmin
 
     def get_user_agent(self):
         """HTTP User-Agent"""
         return "Dalvik/1.4.0 (Linux; U; %s %s; %s Build/GRI54)" % (self.os, self.os_version, self.model)
 
     def get_device_id(self):
-        return str(uuid.uuid5(uuid.NAMESPACE_DNS, socket.gethostname()))
+        return "ebb1083f-7ead-5e11-9847-86fc1d77348e"#str(uuid.uuid5(uuid.NAMESPACE_DNS, socket.gethostname()))
 
     def request_auth_token(self, email, password):
 
@@ -173,22 +228,32 @@ class Endomondo:
             return self.parse_json(r)
         return r
 
-    def get_workouts(self, max_results=40):
-        """Get the most recent workouts"""
-        if not max_results:
-            max_results = 100000000
-        json = self.call('api/workout/list', 'json',
-                         {'maxResults': max_results})
-        return [EndomondoWorkout(self, w) for w in json]
+    def get_workouts(self, max_results, before, after):
+        """Get workouts""" 
+        params = {'maxResults': max_results}
+        if before:
+            params.update({'after': self.to_endomondo_time(after)})
+            params.update({'before': self.to_endomondo_time(before)})
+
+        json = self.call('api/workout/list', 'json', params)
+        return [EndomondoWorkout(self, w, self.garmin) for w in json]
+
+    def to_endomondo_time(self,time):
+        return time.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+    def to_python_time(self, endomondo_time):
+        return datetime.datetime.strptime(endomondo_time, "%Y-%m-%d %H:%M:%S UTC").replace(tzinfo=pytz.utc)
 
 
 class EndomondoWorkout:
     """Endomondo Workout wrapper"""
 
-    def __init__(self, parent, properties):
+    def __init__(self, parent, properties, garmin):
         self.parent = parent
         self.properties = properties
         self.activity = None
+        self.garmin = garmin
 
     # dict wrapper
     def __getattr__(self, name):
@@ -196,7 +261,10 @@ class EndomondoWorkout:
         if name in self.properties:
             value = self.properties[name]
             if name == 'sport':
-                value = SPORTS.get(value, 'Other')
+                if self.garmin:
+                    value = SPORTS_GARMIN.get(value, 'Other')
+                else:
+                    value = SPORTS.get(value, 'Other')
             elif name == 'start_time':
                 value = to_datetime(value)
         return value
@@ -212,9 +280,16 @@ class EndomondoWorkout:
 
         # the 1st line is activity details
         data = lines[0].split(";")
-        start_time = to_datetime(data[6])
+        try:
+            start_time = to_datetime(data[6])
+        except Exception as e:
+            print "start time"
+            sys.exit()
         self.activity = tcx.Activity()
-        self.activity.sport = SPORTS.get(int(data[5]), "Other")
+        if self.garmin:
+            self.activity.sport = SPORTS_GARMIN.get(int(data[5]), "Other")
+        else:
+            self.activity.sport = SPORTS.get(int(data[5]), "Other")
         self.activity.start_time = start_time
         self.activity.notes = self.notes
 
@@ -235,8 +310,11 @@ class EndomondoWorkout:
         for line in lines[1:]:
             data = line.split(";")
             if len(data) >= 9:
-                w = tcx.Trackpoint()
-                w.timestamp = to_datetime(data[0])
+                w = tcx.Trackpoint()    
+                try:
+                    w.timestamp = to_datetime(data[0])
+                except Exception as e:
+                    w.timestamp=start_time
                 w.latitude = to_float(data[2])
                 w.longitude = to_float(data[3])
                 w.altitude_meters = to_float(data[6])

@@ -91,6 +91,7 @@ class Writer:
 
     def add_lap(self, element, activity, lap):
         elem = self.create_element(element, "Lap")
+        
         elem.set("StartTime", self.time_to_s(lap.start_time))
 
         self.add_property(elem, "TotalTimeSeconds", lap.total_time_seconds)
@@ -102,10 +103,9 @@ class Writer:
         self.add_property(elem, "Intensity", lap.intensity)
         self.add_property(elem, "Cadence", lap.cadence)
         self.add_property(elem, "TriggerMethod", lap.trigger_method)
-
-        # Add trackpoints
+        track = self.create_element(elem, "Track")
         for w in activity.trackpoints:
-            self.add_trackpoint(elem, w)
+            self.add_trackpoint(track, w)
 
     def add_activity(self, element, activity):
         sport = activity.sport
