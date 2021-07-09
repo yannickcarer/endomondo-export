@@ -1,6 +1,6 @@
 # Endomondo Export
 
-This is an extended fork of https://github.com/yannickcarer/endomondo-export. Since Endomondo is shutting down it's service with the end of 2020 (what a year), i was searching for a way to export all my workouts (>1000) to Garmin Connect. yannickcarers script works fine (despite beeing python 2.x), but you can not export more than ~500 workouts since the server will timeout roughly around 500 exports. I added a feature than downloads the last 20 years as chunks of 500 trainings and also added the option to format the output for Garmin Connects import function, which needs an extra <Track> Wrapper around trackpoints and only allows "Running", "Biking" and "Other" as activity names.
+This is an extended fork of https://github.com/yannickcarer/endomondo-export. Since Endomondo is shutting down it's service with the end of 2020 (what a year), i was searching for a way to export all my workouts (>1000) to Garmin Connect. yannickcarers script works fine, but you can not export more than ~500 workouts since the server will timeout roughly around 500 exports. I added a feature that downloads the last 20 years as chunks of 500 trainings and also added the option to format the output for Garmin Connect, which needs an extra <Track> Wrapper around trackpoints and only allows "Running", "Biking" and "Other" as activity names.
 
 ## Usage
 
